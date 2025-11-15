@@ -57,6 +57,11 @@ if view == "now":
             st.write("The time of sunrise is", rise)
             st.write("The time of sunset is", set)
             st.bar_chart([c, h])
+            if unit == "celsius":
+                st.write("The bar on the left is the temperature in degrees celsius.")
+            else:
+                st.write("The bar on the left is the temperature in degrees fahrenheit.")
+            st.write("The bar on the right is the humidity.")
     else:
         with box:
             st.write("there was a problem with the api")
