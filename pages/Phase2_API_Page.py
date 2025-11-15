@@ -44,16 +44,16 @@ sunsetstr = sunset.strftime("%H:%M")
 with box:
     if celsius > 25:
         st.subheader("The weather is so hot!")
-        st.image("images/Hot.png")
+        st.image("Images/Hot.png")
     elif celsius > 15:
         st.subheader("The weather is just nice!")
-        st.image("images/Good.png")
+        st.image("Images/Good.png")
     elif celsius > 0:
         st.subheader("The weather is getting cold!")
-        st.image("images/Cold.png")
+        st.image("Images/Cold.png")
     else:
         st.subheader("It's freezing!")
-        st.image("images/Freezing.png")
+        st.image("Images/Freezing.png")
     if unit == "celsius":
         st.write(f"The temperatuer right now is {celsius} decrees celsius")
     else:
