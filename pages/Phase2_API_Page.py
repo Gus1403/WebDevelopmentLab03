@@ -4,6 +4,7 @@ import requests
 
 st.title("Phase 2: Weather API Page")
 
+BASE_URL = "http://api.openweathermap.org/data/2.5/weather"
 FORECAST_URL = "http://api.openweathermap.org/data/2.5/forecast"
 API_KEY = "d4d90f7b23574185aa4dc07c0d33676b"
 
@@ -26,6 +27,39 @@ with col2:
     state2 = st.selectbox("second place", states)
 
 unit = st.selectbox("units", ["celsius", "fahrenheit"])
+
+curr_url1 = BASE_URL + "?appid=" + API_KEY + "&q=" + state1
+curr_url2 = BASE_URL + "?appid=" + API_KEY + "&q=" + state2
+curr_r1 = requests.get(curr_url1)
+curr_r2 = requests.get(curr_url2)
+
+if curr_r1.status_code == 200 and curr_r2.status_code == 200:
+    w1 = curr_r1.json()
+    w2 = curr_r2.json()
+    k1 = w1["main"]["temp"]
+    c1 = round(k1 - 273.15, 2)
+    k2 = w2["main"]["temp"]
+    c2 = round(k2 - 273.15, 2)
+    h1 = w1["main"]["humidity"]
+    h2 = w2["main"]["humidity"]
+    
+    st.subheader("Current Weather Comparison")
+    if unit == "celsius":
+        t1 = c1
+        t2 = c2
+        u = "celsius"
+    else:
+        t1 = round(c1 * 1.8 + 32, 2)
+        t2 = round(c2 * 1.8 + 32, 2)
+        u = "fahrenheit"
+    
+    bar_data = {
+        state1: [t1, h1],
+        state2: [t2, h2]
+    }
+    st.bar_chart(bar_data)
+    st.write("The first bar for each place is the temperature in", u, "and the second bar is the humidity.")
+    st.write("The first place is", state1, "and the second place is", state2, ".")
 
 url1 = FORECAST_URL + "?appid=" + API_KEY + "&q=" + state1
 url2 = FORECAST_URL + "?appid=" + API_KEY + "&q=" + state2
