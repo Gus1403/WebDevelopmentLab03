@@ -1,6 +1,8 @@
 import streamlit as st
 import datetime as dt
 import requests
+import plotly.express as px
+import pandas as pd
 
 st.title("Phase 2: Weather API Page")
 
@@ -21,105 +23,112 @@ states = [
 ]
 
 box = st.container()
+
 with col1:
     state1 = st.selectbox("first place", states)
 with col2:
-    state2 = st.selectbox("second place", states)
+    unit = st.selectbox("units", ["celsius", "fahrenheit"])
 
-unit = st.selectbox("units", ["celsius", "fahrenheit"])
+url0 = BASE_URL + "?appid=" + API_KEY + "&q=" + state1
+data0 = requests.get(url0).json()
+kelvin = data0['main']['temp']
+celsius = round(kelvin - 273.15, 2)
+fahrenheit = round(celsius * 1.8 + 32, 2)
+humidity = data0['main']['humidity']
+description = data0['weather'][0]['description']
+sunrise = dt.datetime.fromtimestamp(data0['sys']['sunrise'] + data0['timezone'])
+sunrisestr = sunrise.strftime("%H:%M")
+sunset = dt.datetime.fromtimestamp(data0['sys']['sunset'] + data0['timezone'])
+sunsetstr = sunset.strftime("%H:%M")
 
-curr_url1 = BASE_URL + "?appid=" + API_KEY + "&q=" + state1
-curr_url2 = BASE_URL + "?appid=" + API_KEY + "&q=" + state2
-curr_r1 = requests.get(curr_url1)
-curr_r2 = requests.get(curr_url2)
-
-if curr_r1.status_code == 200 and curr_r2.status_code == 200:
-    w1 = curr_r1.json()
-    w2 = curr_r2.json()
-    k1 = w1["main"]["temp"]
-    c1 = round(k1 - 273.15, 2)
-    k2 = w2["main"]["temp"]
-    c2 = round(k2 - 273.15, 2)
-    h1 = w1["main"]["humidity"]
-    h2 = w2["main"]["humidity"]
-    
-    st.subheader("Current Weather Comparison")
-    if unit == "celsius":
-        t1 = c1
-        t2 = c2
-        u = "celsius"
+with box:
+    if celsius > 25:
+        st.subheader("The weather is so hot!")
+        st.image("images/Hot.png")
+    elif celsius > 15:
+        st.subheader("The weather is just nice!")
+        st.image("images/Good.png")
+    elif celsius > 0:
+        st.subheader("The weather is getting cold!")
+        st.image("images/Cold.png")
     else:
-        t1 = round(c1 * 1.8 + 32, 2)
-        t2 = round(c2 * 1.8 + 32, 2)
-        u = "fahrenheit"
-    
-    bar_data = {
-        state1: [t1, h1],
-        state2: [t2, h2]
-    }
-    st.bar_chart(bar_data)
-    st.write("The first bar for each place is the temperature in", u, "and the second bar is the humidity.")
-    st.write("The first place is", state1, "and the second place is", state2, ".")
+        st.subheader("It's freezing!")
+        st.image("images/Freezing.png")
+    if unit == "celsius":
+        st.write(f"The temperatuer right now is {celsius} decrees celsius")
+    else:
+        st.write(f"The temperatuer right now is {fahrenheit} degrees fahrenheit")
+    st.write(f"The humidity right now is {humidity}")
+    st.write(f"The weather today can be described as {description}")
+    st.write(f"The time of sunrise is {sunrisestr} local time")
+    st.write(f"The time of sunset is {sunsetstr} local time")
+    st.markdown("---")
+    st.write(f"Now Let's compare {state1}'s temperature with another")
+    state2 = st.selectbox("second place", states)
 
 url1 = FORECAST_URL + "?appid=" + API_KEY + "&q=" + state1
 url2 = FORECAST_URL + "?appid=" + API_KEY + "&q=" + state2
 
-r1 = requests.get(url1)
-r2 = requests.get(url2)
+data1 = requests.get(url1).json()
+data2 = requests.get(url2).json()
 
-if r1.status_code == 200 and r2.status_code == 200:
-    d1 = r1.json()
-    d2 = r2.json()
-    days1 = {}
-    for item in d1["list"]:
-        date = item["dt_txt"].split(" ")[0]
-        k = item["main"]["temp"]
-        c = round(k - 273.15, 2)
-        if date not in days1:
-            days1[date] = []
-        days1[date].append(c)
-    days2 = {}
-    for item in d2["list"]:
-        date = item["dt_txt"].split(" ")[0]
-        k = item["main"]["temp"]
-        c = round(k - 273.15, 2)
-        if date not in days2:
-            days2[date] = []
-        days2[date].append(c)
-    names = []
-    vals1 = []
-    vals2 = []
-    for d in sorted(days1.keys())[:5]:
-        if d in days2:
-            t1 = days1[d]
-            s1 = 0
-            for v in t1:
-                s1 = s1 + v
-            a1 = s1 / len(t1)
-            t2 = days2[d]
-            s2 = 0
-            for v in t2:
-                s2 = s2 + v
-            a2 = s2 / len(t2)
-            if unit == "celsius":
-                vals1.append(round(a1, 2))
-                vals2.append(round(a2, 2))
-            else:
-                f1 = a1 * 1.8 + 32
-                f2 = a2 * 1.8 + 32
-                vals1.append(round(f1, 2))
-                vals2.append(round(f2, 2))
-            names.append(d)
-    with box:
-        st.subheader("Average temperature for the next 5 days")
-        st.write(names)
-        data = {
-            state1: vals1,
-            state2: vals2
-        }
-        st.line_chart(data)
-        st.write("The first line is for", state1, "and the second line is for", state2, ".")
-else:
-    with box:
-        st.write("there was a problem with the api")
+days1 = {}
+for item in data1["list"]:
+    date = item["dt_txt"][:10]
+    temp = round((item["main"]["temp"]) - 273.15, 2)
+    if date not in days1:
+        days1[date] = []
+    days1[date].append(temp)
 
+days2 = {}
+for item in data2["list"]:
+    date = item["dt_txt"][:10]
+    k = item["main"]["temp"]
+    temp = round((item["main"]["temp"]) - 273.15, 2)
+    if date not in days2:
+        days2[date] = []
+    days2[date].append(temp)
+
+names = []
+vals1 = []
+vals2 = []
+
+for d in sorted(days1.keys())[:5]:
+    time1 = days1[d]
+    total1 = 0
+    for v in time1:
+        total1 = total1 + v
+    avg1 = total1 / len(time1)
+
+    time2 = days2[d]
+    total2 = 0
+    for v in time2:
+        total2 = total2 + v
+    avg2 = total2 / len(time2)
+
+    if unit == "celsius":
+        vals1.append(round(avg1, 2))
+        vals2.append(round(avg2, 2))
+    else:
+        faravg1 = avg1 * 1.8 + 32
+        faravg2 = avg2 * 1.8 + 32
+        vals1.append(round(faravg1, 2))
+        vals2.append(round(faravg2, 2))
+    names.append(d)
+
+with box:
+    st.subheader("Average temperature for the next 5 days")
+    
+    df = pd.DataFrame({
+    	"day": list(range(len(names))),
+    	state1: vals1,
+    	state2: vals2
+	})
+    fig = px.line(
+    	df,
+    	x="day",
+    	y=[state1, state2],
+    	labels={"day": "Days since 5 days ago", "value": "Temperature", "variable": "States:"},
+    )
+
+    st.plotly_chart(fig)
