@@ -13,3 +13,4 @@ Welcome to our Streamlit Web Development Lab03 app. Use the sidebar to open the 
 2. **Phase 3 Gemini Page**: Uses the same weather data and Google Gemini to write either a short summary or with extra details.
 3. **Phase 4 Chat Page**: Chatbot that answers questions about the weather data, including advice on clothes or activities to do in the type of weather.
 
+""")
