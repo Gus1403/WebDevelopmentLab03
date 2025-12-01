@@ -4,7 +4,7 @@ st.title("Web Development Lab03")
 
 st.header("CS 1301")
 st.subheader("Team 1, Web Development - Section A")
-st.subheader("Gustavo Zermeno, Titanon Lertussawawiwat")
+st.subheader("Gustavo Zermeno, Titanon Lertussawawiwat, William Nathaniel Faustino Pugeda")
 
 st.write("""
 Welcome to our Streamlit Web Development Lab03 app. Use the sidebar to open the pages.
